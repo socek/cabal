@@ -1,0 +1,51 @@
+version: '3.6'
+services:
+  backend:
+    build:
+      context: ./backend
+    image: backend-image
+    env_file: .env
+    labels:
+      - traefik.http.routers.tracker.rule=Host(`localhost`) && PathPrefix(`/api/1`)
+      - "traefik.http.services.tracker.loadbalancer.server.port=8080"
+      - "traefik.enable=true"
+    volumes:
+      - ./backend/code:/code
+    stdin_open: true
+    tty: true
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    image: frontend-image
+    env_file: .env
+    labels:
+      - traefik.http.routers.frontend.rule=Host(`localhost`) && PathPrefix(`/`)
+      - "traefik.http.services.frontend.loadbalancer.server.port=8080"
+      - "traefik.enable=true"
+    volumes:
+      - ./frontend/code:/code
+    ports:
+      - "8080:8080" # The Web UI (enabled by --api)
+
+  postgres:
+    image: postgres:12.3
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file: .env
+
+  traefik:
+    image: "traefik:v2.2"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"     # The HTTP port
+      # - "8080:8080" # The Web UI (enabled by --api)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # So that Traefik can listen to the Docker events
+
+volumes:
+  pgdata:
