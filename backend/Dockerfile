@@ -4,28 +4,31 @@ FROM python:3.8-alpine as base
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=off \
     APP_DIR=/code \
-    USER_DIR=/home/user
+    USER_DIR=/home/user \
+    PATH=$PATH:/home/user/.poetry/bin
 
 # redis-tools package is required for after deployment tests
-RUN apk --update --no-cache add redis postgresql-dev gcc musl-dev curl  && \
-    pip install pipenv
+RUN apk --update --no-cache add redis postgresql-dev gcc musl-dev curl && \
+    pip install --upgrade pip==20.2
+
 
 # Create dev user
 RUN addgroup -S user -g 1000 && adduser -S user -G user -u 1000 && mkdir -p $USER_DIR && chown user:user $USER_DIR && chmod 777 $USER_DIR
 
-# Create src dir
+# # Create src dir
+RUN mkdir -p $APP_DIR && \
+    chown user:user $APP_DIR && \
+    chmod 777 -R $APP_DIR && \
+    mkdir -p /cabal.egg-info && \
+    chmod 777 /cabal.egg-info -R && \
+    ln -s /cabal.egg-info $APP_DIR/cabal.egg-info
 WORKDIR $APP_DIR
-RUN chmod 777 $APP_DIR
-
-# Install dependencies
-COPY --chown=user:user src/Pipfile src/Pipfile.lock src/setup.py $APP_DIR/
-RUN pipenv install --dev --system && python setup.py develop
 
 USER user
-CMD ./start.sh
+RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 
-FROM base as main
-# Copy all the src and run setuo.py
-COPY --chown=user:user src $APP_DIR
+COPY --chown=user:user code $APP_DIR
+RUN poetry install && poetry run python setup.py develop
+CMD /code/start.sh
 
-EXPOSE 18765
+EXPOSE 8000

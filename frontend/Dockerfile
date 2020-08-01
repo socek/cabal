@@ -9,11 +9,12 @@ WORKDIR /code
 # install project dependencies
 COPY code/package.json .
 RUN yarn install --dev --ignore-engines --unsafe-perm=true -registry=https://registry.npm.taobao.org --modules-folder=/node_modules
+RUN mkdir -p /node_modules && mkdir -p /dist
 EXPOSE 8080
 
 FROM base as dev
 
-CMD [ "yarn", "run", "dev" ]
+CMD [ "yarn", "run", "dev", "--host=0.0.0.0" ]
 
 FROM base as build
 

@@ -6,13 +6,17 @@ services:
     image: backend-image
     env_file: .env
     labels:
-      - traefik.http.routers.tracker.rule=Host(`localhost`) && PathPrefix(`/api/1`)
-      - "traefik.http.services.tracker.loadbalancer.server.port=8080"
+      - traefik.http.routers.api.rule=Host(`localhost`) && PathPrefix(`/api`)
+      - "traefik.http.routers.api.middlewares=api-stripprefix"
+      - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=/api"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
       - "traefik.enable=true"
     volumes:
       - ./backend/code:/code
     stdin_open: true
     tty: true
+    ports:
+      - "8000:8000"
 
   frontend:
     build:
@@ -27,13 +31,13 @@ services:
     volumes:
       - ./frontend/code:/code
     ports:
-      - "8080:8080" # The Web UI (enabled by --api)
+      - "8080:8080"
 
-  postgres:
-    image: postgres:12.3
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    env_file: .env
+  # postgres:
+  #   image: postgres:12.3
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   env_file: .env
 
   traefik:
     image: "traefik:v2.2"
