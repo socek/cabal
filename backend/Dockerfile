@@ -31,4 +31,12 @@ COPY --chown=user:user code $APP_DIR
 RUN poetry install && poetry run python setup.py develop
 CMD /code/start.sh
 
+# Now set it as an env var
+ARG BRANCH=""
+ARG COMMIT="dev"
+LABEL branch=${BRANCH}
+LABEL commit=${COMMIT}
+ENV COMMIT_SHA=${COMMIT}
+ENV COMMIT_BRANCH=${BRANCH}
+
 EXPOSE 8000

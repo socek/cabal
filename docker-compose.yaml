@@ -30,14 +30,12 @@ services:
       - "traefik.enable=true"
     volumes:
       - ./frontend/code:/code
-    ports:
-      - "8080:8080"
 
-  # postgres:
-  #   image: postgres:12.3
-  #   volumes:
-  #     - pgdata:/var/lib/postgresql/data
-  #   env_file: .env
+  postgres:
+    image: postgres:12.3
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file: .env
 
   traefik:
     image: "traefik:v2.2"
@@ -47,7 +45,7 @@ services:
       - "--entrypoints.web.address=:80"
     ports:
       - "80:80"     # The HTTP port
-      # - "8080:8080" # The Web UI (enabled by --api)
+      - "8080:8080" # The Web UI (enabled by --api)
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # So that Traefik can listen to the Docker events
 

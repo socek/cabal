@@ -24,5 +24,13 @@ COPY code/ .
 # build app for production with minification
 RUN yarn run build
 
+# Now set it as an env var
+ARG BRANCH=""
+ARG COMMIT="dev"
+LABEL branch=${BRANCH}
+LABEL commit=${COMMIT}
+ENV COMMIT_SHA=${COMMIT}
+ENV COMMIT_BRANCH=${BRANCH}
+
 EXPOSE 8080
 CMD [ "http-server", "../dist" ]
