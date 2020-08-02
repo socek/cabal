@@ -1,6 +1,6 @@
 # flake8: noqa
 from importlib import import_module
-from pkgutil import iter_modules
+from pkgutil import walk_packages
 
 from colorama import Fore
 from colorama import Style
@@ -12,19 +12,31 @@ from sapp.plugins.sqlalchemy.alembic import AlembicScript
 from cabal import application
 from cabal.app.db import SqlTable
 
-init()
-mainname = "cabal"
-ignore = ["app", "webapp"]
-for module in iter_modules(["cabal"]):
-    if module.name in ignore:
-        continue
-    modulepath = f"{mainname}.{module.name}.drivers.tables"
-    try:
-        import_module(modulepath)
-        print(f"{Fore.GREEN}[ OK  ] Module found: {modulepath}{Style.RESET_ALL}")
-    except ModuleNotFoundError:
-        print(f"{Fore.YELLOW}[FAIL ] Module not found: {modulepath}{Style.RESET_ALL}")
-    except SyntaxError:
-        print(f"{Fore.RED}[ERROR] Module syntax error: {modulepath}{Style.RESET_ALL}")
 
+def search(parent, name):
+    tables = []
+    print("Searching for all tables")
+    for module in walk_packages([parent], f"{parent}."):
+        try:
+            package = import_module(module.name)
+        except Exception:
+            print(f"{Fore.RED}[ERRO]{Style.RESET_ALL} Module error: {module.name}")
+            continue
+        intro = False
+        for elementname in dir(package):
+            try:
+                element = getattr(package, elementname)
+                if issubclass(element, SqlTable) and element != SqlTable:
+                    if not intro:
+                        print(f"{Fore.GREEN}[ OK ]{Style.RESET_ALL} Module found: {module.name}")
+                        intro = True
+                    print(f"\tFound: {elementname}")
+                    tables.append(f"{module.name}:{elementname}")
+            except TypeError:
+                pass
+    print(f" >>> Found {len(tables)} tables\n")
+
+
+init()
+search("cabal", "tables")
 AlembicScript(application, SqlTable, "dbsession").run()

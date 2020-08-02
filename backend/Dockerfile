@@ -27,11 +27,14 @@ WORKDIR $APP_DIR
 USER user
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 
-COPY --chown=user:user code $APP_DIR
+COPY --chown=user:user code/pyproject.toml $APP_DIR
+COPY --chown=user:user code/poetry.lock $APP_DIR
+COPY --chown=user:user code/setup.py $APP_DIR
 RUN poetry install && poetry run python setup.py develop
 CMD /code/start.sh
 
 # Now set it as an env var
+COPY --chown=user:user code $APP_DIR
 ARG BRANCH=""
 ARG COMMIT="dev"
 LABEL branch=${BRANCH}
