@@ -1,4 +1,4 @@
-def logging(settings):
+def logging(settings: dict):
     settings['logging'] = {
         'version': 1,
         'disable_existing_loggers': True,
