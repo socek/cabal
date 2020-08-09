@@ -1,20 +1,20 @@
 FROM node:lts-alpine as base
 
 # install simple http server for serving static content
-RUN yarn global add http-server vue-cli -registry=https://registry.npm.taobao.org
+RUN yarn global add http-server @vue/cli
 
 # make the 'app' folder the current working directory
 WORKDIR /code
 
 # install project dependencies
-COPY code/package.json .
-RUN yarn install --dev --ignore-engines --unsafe-perm=true -registry=https://registry.npm.taobao.org --modules-folder=/node_modules
-RUN mkdir -p /node_modules && mkdir -p /dist
+RUN mkdir -p /node_modules && ln -s /node_modules
+COPY code/package.json yarn.lock* .
+RUN yarn install --dev --ignore-engines --unsafe-perm=true
 EXPOSE 8080
 
 FROM base as dev
 
-CMD [ "yarn", "run", "dev", "--host=0.0.0.0" ]
+CMD [ "yarn", "serve", "--host=0.0.0.0" ]
 
 FROM base as build
 
