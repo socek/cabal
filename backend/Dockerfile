@@ -5,7 +5,7 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=off \
     APP_DIR=/code \
     USER_DIR=/home/user \
-    PATH=$PATH:/home/user/.poetry/bin
+    PATH=/home/user/.poetry/bin:$PATH
 
 # redis-tools package is required for after deployment tests
 RUN apk --update --no-cache add redis postgresql-dev gcc musl-dev curl && \
@@ -18,19 +18,21 @@ RUN addgroup -S user -g 1000 && adduser -S user -G user -u 1000 && mkdir -p $USE
 # # Create src dir
 RUN mkdir -p $APP_DIR && \
     chown user:user $APP_DIR && \
-    chmod 777 -R $APP_DIR && \
-    mkdir -p /cabal.egg-info && \
-    chmod 777 /cabal.egg-info -R && \
-    ln -s /cabal.egg-info $APP_DIR/cabal.egg-info
+    chmod 777 -R $APP_DIR
 WORKDIR $APP_DIR
 
 USER user
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 
+# install dependecies
 COPY --chown=user:user code/pyproject.toml $APP_DIR
 COPY --chown=user:user code/poetry.lock $APP_DIR
-COPY --chown=user:user code/setup.py $APP_DIR
-RUN poetry install && poetry run python setup.py develop
+RUN poetry install
+
+# install app
+COPY --chown=user:user code/ $APP_DIR
+RUN poetry install
+
 CMD /code/start.sh
 
 # Now set it as an env var

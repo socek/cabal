@@ -1,2 +1,2 @@
 #!/bin/sh
-poetry run pserve webapp.ini --reload
+poetry run pserve app.ini --reload

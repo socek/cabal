@@ -22,17 +22,5 @@ def database(settings: dict):
     password = config("POSTGRES_PASSWORD")
     host = config("POSTGRES_HOST")
     settings["db:dbsession:url"] = f"postgresql://{user}:{password}@{host}:5432/{name}"
-    settings[
-        "db:dbsession:default_url"
-    ] = f"postgresql://{user}:{password}@{host}:5432/postgres"
+    settings["db:dbsession:default_url"] = f"postgresql://{user}:{password}@{host}:5432/postgres"
     settings["db:dbsession:options"] = {"pool_recycle": 3600}
-
-
-def webapp() -> dict:
-    settings = default()
-    return settings
-
-
-def command() -> dict:
-    settings = default()
-    return settings
