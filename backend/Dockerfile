@@ -25,8 +25,7 @@ USER user
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 
 # install dependecies
-COPY --chown=user:user code/pyproject.toml $APP_DIR
-COPY --chown=user:user code/poetry.lock $APP_DIR
+COPY --chown=user:user code/pyproject.toml code/poetry.lock* $APP_DIR
 RUN poetry install
 
 # install app

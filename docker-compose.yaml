@@ -3,7 +3,7 @@ services:
   backend:
     build:
       context: ./backend
-    image: backend-image
+    image: cabal-backend-image
     env_file: .env
     labels:
       - traefik.http.routers.api.rule=Host(`localhost`) && PathPrefix(`/api`)
@@ -22,7 +22,7 @@ services:
     build:
       context: ./frontend
       target: dev
-    image: frontend-image
+    image: cabal-frontend-image
     env_file: .env
     labels:
       - traefik.http.routers.frontend.rule=Host(`localhost`) && PathPrefix(`/`)
